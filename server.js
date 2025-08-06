@@ -1,20 +1,24 @@
-// File: api/index.js (Backend API for Vercel)
+// File: server.js (Backend)
 const express = require('express');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
+const PORT = 5000;
 
+app.use(cors());
 app.use(bodyParser.json());
 
 // AI Email Generation Endpoint
-app.post('/api/generate-email', async (req, res) => {
+app.post('/generate-email', async (req, res) => {
     const { prompt } = req.body;
 
     try {
         const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-            model: 'llama3-70b-8192',
+            model: 'llama3-70b-8192', // Updated to a valid model
             messages: [{ role: 'user', content: prompt }],
             max_tokens: 300
         }, {
@@ -33,7 +37,7 @@ app.post('/api/generate-email', async (req, res) => {
 });
 
 // Email Sending Endpoint
-app.post('/api/send-email', async (req, res) => {
+app.post('/send-email', async (req, res) => {
     const { recipients, subject, emailBody } = req.body;
 
     let transporter = nodemailer.createTransport({
@@ -60,4 +64,6 @@ app.post('/api/send-email', async (req, res) => {
     }
 });
 
-module.exports = (req, res) => app(req, res);
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
